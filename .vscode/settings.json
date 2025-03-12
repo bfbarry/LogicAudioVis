@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "*.mm": "cpp",
+        "array": "cpp",
+        "future": "cpp",
+        "istream": "cpp",
+        "locale": "cpp",
+        "memory": "cpp",
+        "thread": "cpp",
+        "tuple": "cpp",
+        "variant": "cpp"
+    }
+}
