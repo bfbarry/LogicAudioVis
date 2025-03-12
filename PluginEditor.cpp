@@ -24,6 +24,10 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (juce::Colours::white);
     g.setFont (15.0f);
+    juce::String bufferText = "values: ";
+    {
+        const juce::ScopedLock sl(processorRef.bufferLock);
+    }
     g.drawFittedText ("Fuck you.", getLocalBounds(), juce::Justification::centred, 1);
 }
 
