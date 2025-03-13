@@ -1,7 +1,8 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
-
+// #include <juce_core/juce_core.h>
+// #include <juce_gui_basics/juce_gui_basics.h>
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
 {
@@ -45,6 +46,7 @@ public:
     // custom
     juce::Array<float> currentBufferValues;
     juce::CriticalSection bufferLock;
+    bool isMuted = true;
 
 private:
     //==============================================================================

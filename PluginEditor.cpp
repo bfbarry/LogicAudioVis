@@ -27,12 +27,23 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     juce::String bufferText = "values: ";
     {
         const juce::ScopedLock sl(processorRef.bufferLock);
+        for (int i = 0; i < processorRef.currentBufferValues.size(); ++i) {
+            bufferText += juce::String(processorRef.currentBufferValues[i], 4);
+            if (i < processorRef.currentBufferValues.size() - 1)
+                bufferText += ", ";
+        }
     }
-    g.drawFittedText ("Fuck you.", getLocalBounds(), juce::Justification::centred, 1);
+    // g.drawFittedText(bufferText, getLocalBounds(), juce::Justification::centred, 3);
+    g.drawFittedText ("hello", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void AudioPluginAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+}
+
+void AudioPluginAudioProcessorEditor::timerCallback()
+{
+    repaint();
 }
