@@ -8,6 +8,7 @@
         "memory": "cpp",
         "thread": "cpp",
         "tuple": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "vector": "cpp"
     }
 }

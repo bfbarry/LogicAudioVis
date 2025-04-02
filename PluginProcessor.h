@@ -1,9 +1,17 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <vector>
 // #include <juce_core/juce_core.h>
 // #include <juce_gui_basics/juce_gui_basics.h>
 //==============================================================================
+class VisualizerProcessor
+{
+public:
+    VisualizerProcessor();
+    std::vector<float> transformWaveform(juce::Array<float>& buffer);
+};
+
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
 {
 public:
@@ -47,6 +55,7 @@ public:
     juce::Array<float> currentBufferValues;
     juce::CriticalSection bufferLock;
     bool isMuted = true;
+    juce::Atomic<bool> newDataAvailable {false};
 
 private:
     //==============================================================================

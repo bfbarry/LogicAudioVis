@@ -1,6 +1,46 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include <Eigen/Dense>
+#include <Eigen/SVD>
 
+
+Eigen::MatrixXf convertToEigenMatrix(juce::Array<float> &buffer) {
+
+};
+//==============================================================================
+VisualizerProcessor::VisualizerProcessor()
+{};
+
+std::vector<float> VisualizerProcessor::transformWaveform(juce::Array<float>& buffer) 
+{
+    // wh = 500
+    // windows = np.zeros((wh, wh))
+
+    // for t in range(50):
+    //     sample = l[:wh*2]
+    //     for i in range(wh):
+    //         windows[i, :] = sample[i:i+wh]
+
+    //     plt.imshow(windows)
+    //     plt.show()
+
+    //     pca = PCA()
+    //     windows_pca = pca.fit_transform(windows)
+
+    //     plt.plot(windows_pca[:, 0], windows_pca[:, 2])
+    int wh = 500;
+    Eigen::MatrixXf windows(wh, wh);
+    for (int t = 0; t < 50; ++t) {
+        
+    }
+    Eigen::MatrixXf data = convertToEigenMatrix(buffer);
+    //center data
+
+    // Eigen::VectorXf mean = data.mean();
+
+    std::vector<float> x = {1.0f,2.0f};
+    return x;
+}
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
      : AudioProcessor (BusesProperties()
@@ -151,7 +191,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             currentBufferValues.add(channelData[i]);
         }
     }
-
+    newDataAvailable.set(true);
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
     // Make sure to reset the state if your inner loop is processing

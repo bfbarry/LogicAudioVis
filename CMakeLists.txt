@@ -25,6 +25,7 @@ project(AUDIO_VIS VERSION 0.0.1)
 #  find_package(JUCE CONFIG REQUIRED)        # If you've installed JUCE to your system
 # or
 add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory called JUCE
+find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 
 # If you are building a VST2 or AAX plugin, CMake needs to be told where to find these SDKs on your
 # system. This setup should be done before calling `juce_add_plugin`.
@@ -106,6 +107,7 @@ target_link_libraries(AudioPluginExample
     PRIVATE
         # AudioPluginData           # If we'd created a binary data target, we'd link to it here
         juce::juce_audio_utils
+        Eigen3::Eigen
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
