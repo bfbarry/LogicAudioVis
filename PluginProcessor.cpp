@@ -3,44 +3,65 @@
 #include <Eigen/Dense>
 #include <Eigen/SVD>
 
-
-Eigen::MatrixXf convertToEigenMatrix(juce::Array<float> &buffer) {
-
-};
-//==============================================================================
-VisualizerProcessor::VisualizerProcessor()
-{};
-
-std::vector<float> VisualizerProcessor::transformWaveform(juce::Array<float>& buffer) 
-{
-    // wh = 500
-    // windows = np.zeros((wh, wh))
-
-    // for t in range(50):
-    //     sample = l[:wh*2]
-    //     for i in range(wh):
-    //         windows[i, :] = sample[i:i+wh]
-
-    //     plt.imshow(windows)
-    //     plt.show()
-
-    //     pca = PCA()
-    //     windows_pca = pca.fit_transform(windows)
-
-    //     plt.plot(windows_pca[:, 0], windows_pca[:, 2])
-    int wh = 500;
-    Eigen::MatrixXf windows(wh, wh);
-    for (int t = 0; t < 50; ++t) {
-        
-    }
-    Eigen::MatrixXf data = convertToEigenMatrix(buffer);
-    //center data
-
-    // Eigen::VectorXf mean = data.mean();
-
-    std::vector<float> x = {1.0f,2.0f};
-    return x;
-}
+//typedef struct Manifold2d {
+//    Eigen::VectorXf x;
+//    Eigen::VectorXf y;
+//} Manifold2d;
+//
+//Eigen::MatrixXf convertToEigenMatrix(juce::Array<float> &buffer) {
+//
+//};
+////==============================================================================
+//VisualizerProcessor::VisualizerProcessor()
+//{};
+//
+//Manifold2d VisualizerProcessor::transformWaveform(juce::Array<float>& buffer) 
+//{
+//    // wh = 500
+//    // windows = np.zeros((wh, wh))
+//
+//    // for t in range(50):
+//    //     sample = l[:wh*2]
+//    //     for i in range(wh):
+//    //         windows[i, :] = sample[i:i+wh]
+//
+//    //     plt.imshow(windows)
+//    //     plt.show()
+//
+//    //     pca = PCA()
+//    //     windows_pca = pca.fit_transform(windows)
+//
+//    //     plt.plot(windows_pca[:, 0], windows_pca[:, 2])
+//    int wh = 500;
+//    Eigen::MatrixXf windows(wh, wh);
+//    for (int t = 0; t < 50; ++t) {
+//        
+//    }
+//    Eigen::MatrixXf data = convertToEigenMatrix(buffer);
+//    
+//    //center data
+//    Eigen::VectorXf mean = data.colwise().mean();
+//    Eigen::MatrixXf centered = data.rowwise() - mean.transpose();
+//
+//    // perform SVD
+//    Eigen::BDCSVD<Eigen::MatrixXf> svd(centered, Eigen::ComputeThinU | Eigen::ComputeThinV);
+//
+//    // right SVs == PCs
+//    Eigen::MatrixXf components = svd.matrixV();
+//
+//    // SV^2 == eigenvals
+//    Eigen::VectorXf explained_variance = svd.singularValues().array().square() / (data.rows() - 1);
+//
+//    // project
+//    Eigen::MatrixXf window_pca = centered * components;
+//    
+//    Manifold2d res;
+//    res.x = window_pca.col(0);
+//    res.y = window_pca.col(1);
+//    return res;
+//}
+//
+//
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
      : AudioProcessor (BusesProperties()

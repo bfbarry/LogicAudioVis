@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
-
+// dummy
 //==============================================================================
 class AudioVisualizer : public juce::Component, public juce::Timer
 {

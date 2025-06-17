@@ -9,6 +9,7 @@
         "thread": "cpp",
         "tuple": "cpp",
         "variant": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "charconv": "cpp"
     }
 }

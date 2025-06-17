@@ -9,7 +9,7 @@ class VisualizerProcessor
 {
 public:
     VisualizerProcessor();
-    std::vector<float> transformWaveform(juce::Array<float>& buffer);
+    // Manifold2d transformWaveform(juce::Array<float>& buffer);
 };
 
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
