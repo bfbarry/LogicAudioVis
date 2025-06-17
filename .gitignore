@@ -2,3 +2,4 @@ JUCE
 build
 data
 *.so
+.cache
