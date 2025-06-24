@@ -37,7 +37,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     addAndMakeVisible(visualizer);
-    setSize (600, 400);
+    setSize (700, 700);
     // startTimerHz(30);
 }
 
@@ -77,7 +77,6 @@ AudioVisualizer::AudioVisualizer (AudioPluginAudioProcessor& p)
 void AudioVisualizer::paint (juce::Graphics& g)
 {
     g.fillAll(juce::Colours::black);
-    g.setColour(juce::Colours::green);
 
     Eigen::MatrixXf pcaProj;
     {
@@ -94,18 +93,29 @@ void AudioVisualizer::paint (juce::Graphics& g)
     Eigen::RowVectorXf X = pcaProj.col(0);
     Eigen::RowVectorXf Y = pcaProj.col(1);
     const int numPoints = X.size();
-    const float pathStep = width/numPoints;
 
-    waveform.startNewSubPath(0, height*0.5f);
+    for (int i = 1; i < numPoints; ++i) {
+        float r = juce::jlimit(0.0f, 1.0f, 0.3f + 0.7f * (float)i / (float)numPoints);
+        float g_ = 0.5f;
+        float b = juce::jlimit(0.0f, 1.0f, 0.3f + 0.7f * (float)i / (float)numPoints);
+        float a = 1.0f;
 
-    for (int i = 0; i < numPoints; ++i) {
-        float x = juce::jmap(X[i], -1.0f, 1.0f, width, 0.0f);
-        float y = juce::jmap(Y[i], -1.0f, 1.0f, height, 0.0f);
-        waveform.lineTo(x, y);
+        // Create a new color with the adjusted components
+        float hue = (float)i / (float)numPoints;
+
+        // juce::Colour newColor(r, g_, b, a);
+        juce::Colour newColor = juce::Colour::fromHSV(hue, r, g_, b);
+        g.setColour(newColor);
+
+        float x1 = juce::jmap(X[i-1], -1.0f, 1.0f, width, 0.0f);
+        float y1 = juce::jmap(Y[i-1], -1.0f, 1.0f, height, 0.0f);
+        float x2 = juce::jmap(X[i],   -1.0f, 1.0f, width, 0.0f);
+        float y2 = juce::jmap(Y[i],   -1.0f, 1.0f, height, 0.0f);
+
+        g.drawLine(x1, y1, x2, y2, 4.0f);
     }
-
-    g.strokePath(waveform, juce::PathStrokeType(2.0f));
 }
+
 
 void AudioVisualizer::timerCallback()
 {

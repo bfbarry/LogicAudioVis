@@ -14,11 +14,11 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        ),
-        matH(60),
-        matW(60),
-        nLeftOver(5)
+        matW(200),
+        matH(30),
+        nLeftOver(30)
 {
-    windowMat = Eigen::MatrixXf::Random(matW, matH);
+    windowMat = Eigen::MatrixXf::Random(matH, matW);
     leftOver = Eigen::VectorXf::Zero(nLeftOver);
 }
 
