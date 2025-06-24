@@ -8,24 +8,30 @@
 
 namespace py = pybind11;
 
-static Eigen::MatrixXf _pcaFitTransform(Eigen::MatrixXf& data) { 
-    //center data
+static Eigen::MatrixXf _pcaFitTransform(Eigen::MatrixXf& data) {
+    // Center the data
     Eigen::VectorXf mean = data.colwise().mean();
     Eigen::MatrixXf centered = data.rowwise() - mean.transpose();
 
-    // perform SVD
+    // Compute full SVD
     Eigen::BDCSVD<Eigen::MatrixXf> svd(centered, Eigen::ComputeThinU | Eigen::ComputeThinV);
 
-    // right SVs == PCs
-    Eigen::MatrixXf components = svd.matrixV();
+    // Determine how many components to keep
+    int k = std::min(data.rows(), data.cols());
 
-    // SV^2 == eigenvals
-    Eigen::VectorXf explained_variance = svd.singularValues().array().square() / (data.rows() - 1);
+    // Get the top-k principal components
+    Eigen::MatrixXf components = svd.matrixV().leftCols(k);
 
-    // project
-    Eigen::MatrixXf window_pca = centered * components;
+    // Optional: flip signs for consistency with sklearn
+    for (int i = 0; i < components.cols(); ++i) {
+        if (components(0, i) < 0)
+            components.col(i) *= -1;
+    }
 
-    return window_pca;
+    // Project data
+    Eigen::MatrixXf transformed = centered * components;
+
+    return transformed;
 }
 
 
@@ -39,7 +45,7 @@ static py::array_t<float> pcaFitTransform(py::array_t<float> input) {
     int cols = buf.shape[1];
 
     float* ptr = static_cast<float*>(buf.ptr);
-    Eigen::Map<Eigen::MatrixXf> data_map(ptr, rows, cols);
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> data_map(ptr, rows, cols);
     Eigen::MatrixXf data = data_map;
 
     Eigen::MatrixXf result = _pcaFitTransform(data);
@@ -47,7 +53,7 @@ static py::array_t<float> pcaFitTransform(py::array_t<float> input) {
     // back to np array
     auto output = py::array_t<float>(
         {result.rows(), result.cols()},
-        {sizeof(float) * result.cols(), sizeof(float)}
+        {sizeof(float), sizeof(float) * result.rows()}
     );
 
     //copy data into output's pointer

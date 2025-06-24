@@ -7,6 +7,7 @@
 # that the installed CMake will be able to understand the following CMakeLists, and ensures that
 # CMake's behaviour is compatible with the named version. This is a standard CMake command, so more
 # information can be found in the CMake docs.
+set(CMAKE_BUILD_TYPE Debug)
 
 cmake_minimum_required(VERSION 3.22)
 

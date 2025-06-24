@@ -2,6 +2,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <vector>
+#include <Eigen/Dense>
 // #include <juce_core/juce_core.h>
 // #include <juce_gui_basics/juce_gui_basics.h>
 //==============================================================================
@@ -52,10 +53,16 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     // custom
-    juce::Array<float> currentBufferValues;
+    // juce::Array<float> currentBufferValues;
+    Eigen::MatrixXf windowMat;
+    int matW;
+    int matH;
+    int nLeftOver;
+    Eigen::ArrayXf leftOver;
     juce::CriticalSection bufferLock;
-    bool isMuted = true;
     juce::Atomic<bool> newDataAvailable {false};
+
+    bool isMuted = true;
 
 private:
     //==============================================================================

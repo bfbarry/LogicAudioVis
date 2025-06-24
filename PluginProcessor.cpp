@@ -1,67 +1,9 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include <Eigen/Dense>
-#include <Eigen/SVD>
+#include <iostream>
 
-//typedef struct Manifold2d {
-//    Eigen::VectorXf x;
-//    Eigen::VectorXf y;
-//} Manifold2d;
-//
-//Eigen::MatrixXf convertToEigenMatrix(juce::Array<float> &buffer) {
-//
-//};
-////==============================================================================
-//VisualizerProcessor::VisualizerProcessor()
-//{};
-//
-//Manifold2d VisualizerProcessor::transformWaveform(juce::Array<float>& buffer) 
-//{
-//    // wh = 500
-//    // windows = np.zeros((wh, wh))
-//
-//    // for t in range(50):
-//    //     sample = l[:wh*2]
-//    //     for i in range(wh):
-//    //         windows[i, :] = sample[i:i+wh]
-//
-//    //     plt.imshow(windows)
-//    //     plt.show()
-//
-//    //     pca = PCA()
-//    //     windows_pca = pca.fit_transform(windows)
-//
-//    //     plt.plot(windows_pca[:, 0], windows_pca[:, 2])
-//    int wh = 500;
-//    Eigen::MatrixXf windows(wh, wh);
-//    for (int t = 0; t < 50; ++t) {
-//        
-//    }
-//    Eigen::MatrixXf data = convertToEigenMatrix(buffer);
-//    
-//    //center data
-//    Eigen::VectorXf mean = data.colwise().mean();
-//    Eigen::MatrixXf centered = data.rowwise() - mean.transpose();
-//
-//    // perform SVD
-//    Eigen::BDCSVD<Eigen::MatrixXf> svd(centered, Eigen::ComputeThinU | Eigen::ComputeThinV);
-//
-//    // right SVs == PCs
-//    Eigen::MatrixXf components = svd.matrixV();
-//
-//    // SV^2 == eigenvals
-//    Eigen::VectorXf explained_variance = svd.singularValues().array().square() / (data.rows() - 1);
-//
-//    // project
-//    Eigen::MatrixXf window_pca = centered * components;
-//    
-//    Manifold2d res;
-//    res.x = window_pca.col(0);
-//    res.y = window_pca.col(1);
-//    return res;
-//}
-//
-//
+
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
      : AudioProcessor (BusesProperties()
@@ -71,8 +13,13 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
+        matH(60),
+        matW(60),
+        nLeftOver(5)
 {
+    windowMat = Eigen::MatrixXf::Random(matW, matH);
+    leftOver = Eigen::VectorXf::Zero(nLeftOver);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -203,31 +150,41 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     int chanTest = 0;
     const float* channelData = buffer.getReadPointer(chanTest);
-    const int numSamples = juce::jmin(10, buffer.getNumSamples());
 
+    const int numSamples = juce::jmin(matW, buffer.getNumSamples());
+
+    // vis code
     {
         const juce::ScopedLock sl(bufferLock);
-        currentBufferValues.clearQuick();
-        for (int i = 0; i < numSamples; ++i) {
-            currentBufferValues.add(channelData[i]);
+        
+        // shift matrix up and populate new row
+        Eigen::MatrixXf newMat = Eigen::MatrixXf::Zero(windowMat.rows(), windowMat.cols());
+        newMat.topRows(windowMat.rows() - 1) = windowMat.bottomRows(windowMat.rows() - 1);
+
+        Eigen::RowVectorXf newRow(numSamples);
+        // fill front of vector 
+        for (int i=0; i < nLeftOver; ++i) {
+            newRow[i] = leftOver[i];
         }
+
+        // backfill with new data
+        for (int i=nLeftOver; i < numSamples-nLeftOver; ++i) {
+            newRow[i] = channelData[i-nLeftOver];
+        }
+
+        newMat.row(newMat.rows()-1) = newRow;
+
+        // reset leftOver
+        for (int i=0; i < nLeftOver; ++i) {
+            leftOver[i] = channelData[numSamples-nLeftOver+i];
+        }
+
+        windowMat = newMat;
     }
     newDataAvailable.set(true);
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
-    }
 
     if (isMuted) {
-        for (auto i = 0; i < totalNumOutputChannels; ++i)
+        for (auto i=0; i < totalNumOutputChannels; ++i)
             buffer.clear(i, 0, buffer.getNumSamples());
     }
 }

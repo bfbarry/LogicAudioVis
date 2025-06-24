@@ -1,5 +1,33 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include <Eigen/Dense>
+#include <Eigen/SVD>
+
+static Eigen::MatrixXf _pcaFitTransform(Eigen::MatrixXf& data) {
+    // Center the data
+    Eigen::VectorXf mean = data.colwise().mean();
+    Eigen::MatrixXf centered = data.rowwise() - mean.transpose();
+
+    // Compute full SVD
+    Eigen::BDCSVD<Eigen::MatrixXf> svd(centered, Eigen::ComputeThinU | Eigen::ComputeThinV);
+
+    // Determine how many components to keep
+    int k = std::min(data.rows(), data.cols());
+
+    // Get the top-k principal components
+    Eigen::MatrixXf components = svd.matrixV().leftCols(k);
+
+    // Optional: flip signs for consistency with sklearn
+    for (int i = 0; i < components.cols(); ++i) {
+        if (components(0, i) < 0)
+            components.col(i) *= -1;
+    }
+
+    // Project data
+    Eigen::MatrixXf transformed = centered * components;
+
+    return transformed;
+}
 
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
@@ -51,11 +79,11 @@ void AudioVisualizer::paint (juce::Graphics& g)
     g.fillAll(juce::Colours::black);
     g.setColour(juce::Colours::green);
 
-    // TODO use transformed copies instead
-    juce::Array<float> localCopy;
+    Eigen::MatrixXf pcaProj;
     {
         const juce::ScopedLock sl(processorRef.bufferLock);
-        localCopy = processorRef.currentBufferValues;
+        pcaProj = _pcaFitTransform(processorRef.windowMat);
+
     }
     auto bounds = getLocalBounds().toFloat();
     auto width = bounds.getWidth();
@@ -63,14 +91,17 @@ void AudioVisualizer::paint (juce::Graphics& g)
 
     juce::Path waveform;
 
-    const int numPoints = processorRef.currentBufferValues.size();
+    Eigen::RowVectorXf X = pcaProj.col(0);
+    Eigen::RowVectorXf Y = pcaProj.col(1);
+    const int numPoints = X.size();
     const float pathStep = width/numPoints;
 
     waveform.startNewSubPath(0, height*0.5f);
 
     for (int i = 0; i < numPoints; ++i) {
-        float y = juce::jmap(localCopy[i], -1.0f, 1.0f, height, 0.0f);
-        waveform.lineTo(i * pathStep, y);
+        float x = juce::jmap(X[i], -1.0f, 1.0f, width, 0.0f);
+        float y = juce::jmap(Y[i], -1.0f, 1.0f, height, 0.0f);
+        waveform.lineTo(x, y);
     }
 
     g.strokePath(waveform, juce::PathStrokeType(2.0f));
