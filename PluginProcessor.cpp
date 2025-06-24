@@ -14,9 +14,9 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        ),
-        matW(200),
-        matH(30),
-        nLeftOver(30)
+        matW(300),
+        matH(40),
+        nLeftOver(5)
 {
     windowMat = Eigen::MatrixXf::Random(matH, matW);
     leftOver = Eigen::VectorXf::Zero(nLeftOver);
@@ -158,28 +158,36 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         const juce::ScopedLock sl(bufferLock);
         
         // shift matrix up and populate new row
-        Eigen::MatrixXf newMat = Eigen::MatrixXf::Zero(windowMat.rows(), windowMat.cols());
-        newMat.topRows(windowMat.rows() - 1) = windowMat.bottomRows(windowMat.rows() - 1);
+        // Eigen::MatrixXf newMat = Eigen::MatrixXf::Zero(windowMat.rows(), windowMat.cols());
+        // newMat.topRows(windowMat.rows() - 1) = windowMat.bottomRows(windowMat.rows() - 1);
 
-        Eigen::RowVectorXf newRow(numSamples);
-        // fill front of vector 
-        for (int i=0; i < nLeftOver; ++i) {
-            newRow[i] = leftOver[i];
-        }
+        // Eigen::RowVectorXf newRow(numSamples);
+        // // fill front of vector 
+        // for (int i=0; i < nLeftOver; ++i) {
+        //     newRow[i] = leftOver[i];
+        // }
 
-        // backfill with new data
-        for (int i=nLeftOver; i < numSamples-nLeftOver; ++i) {
-            newRow[i] = channelData[i-nLeftOver];
-        }
+        // // backfill with new data
+        // for (int i=nLeftOver; i < numSamples-nLeftOver; ++i) {
+        //     newRow[i] = channelData[i-nLeftOver];
+        // }
 
-        newMat.row(newMat.rows()-1) = newRow;
+        // newMat.row(newMat.rows()-1) = newRow;
+
+        // shift matrix up in-place
+        windowMat.topRows(windowMat.rows() - 1) = windowMat.bottomRows(windowMat.rows() - 1);
+
+        // populate new row
+        windowMat.row(windowMat.rows() - 1).head(nLeftOver) = leftOver.head(nLeftOver).transpose();
+        windowMat.row(windowMat.rows() - 1).segment(nLeftOver, numSamples - nLeftOver) = Eigen::Map<const Eigen::VectorXf>(channelData, numSamples - nLeftOver).transpose();
+
 
         // reset leftOver
         for (int i=0; i < nLeftOver; ++i) {
             leftOver[i] = channelData[numSamples-nLeftOver+i];
         }
 
-        windowMat = newMat;
+        // windowMat = newMat;
     }
     newDataAvailable.set(true);
 

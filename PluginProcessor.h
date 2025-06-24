@@ -55,10 +55,6 @@ public:
     // custom
     // juce::Array<float> currentBufferValues;
     Eigen::MatrixXf windowMat;
-    int matW;
-    int matH;
-    int nLeftOver;
-    Eigen::ArrayXf leftOver;
     juce::CriticalSection bufferLock;
     juce::Atomic<bool> newDataAvailable {false};
 
@@ -67,4 +63,9 @@ public:
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
+    int matW;
+    int matH;
+    int nLeftOver;
+    Eigen::ArrayXf leftOver;
+    // Eigen::MatrixXf newMat;
 };
